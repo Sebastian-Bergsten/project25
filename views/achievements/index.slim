@@ -1,0 +1,9 @@
+h1 All Achievements
+
+
+ol
+  - achievements.each do |achievement|
+    li 
+      a href="achievements/#{achievement['AchievementId']}" #{achievement["title"]}
+      form action="achievements/#{achievement['AchievementId']}/delete" method="post"
+        input type="submit" value="Delete"/
