@@ -4,7 +4,7 @@ require 'sqlite3'
 require 'sinatra/reloader'
 #require 'becrypt'
 
-# fyra minuter in på film 4
+# 
 
 enable :sessions
 
@@ -24,11 +24,22 @@ get('/achievements/new') do
 end
 
 post('/achievements/new') do
+    "procent = params[:procent].to_i"
     title = params[:title]
+    details = params[:details]
+    link = params[:link]
+    hidden_attribute = params[:hidden_attribute].to_i
     game_id = params[:game_id].to_i
     db = SQLite3::Database.new("db/DB.db")
-    db.execute("INSERT INTO achievements (title, game_id) VALUES (?,?)",[title,game_id])
-    redirect('achievements')
+    db.execute("INSERT INTO achievements (title, details, link, hidden_attribute, game_id) VALUES (?,?,?,?,?)",[title,details,link,hidden_attribute,game_id])
+    redirect('/achievements')
+end
+
+post('/achievements/:id/delete') do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/DB.db")
+    db.execute("DELETE FROM achievements WHERE AchievementId = ?",id)
+    redirect('/achievements')
 end
 
 
