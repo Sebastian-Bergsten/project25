@@ -1,0 +1,7 @@
+h1 All Games
+
+
+ol
+  - games.each do |game|
+    li 
+      a href="games/#{game['GameId']}" #{game["title"]}

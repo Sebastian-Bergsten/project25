@@ -1,0 +1,7 @@
+form action="/achievements/#{result["AchievementId"]}/update" method="post"
+    input type="text" name="title" value="#{result["title"]}"
+    input type="text" name="details" value="#{result["details"]}"
+    input type="text" name="link" value="#{result["link"]}"
+    input type="text" name="hidden_attribute" value="#{result["hidden_attribute"]}"
+    input type="text" name="game_id" value="#{result["game_id"]}"/
+    input type="submit" value="Edit"

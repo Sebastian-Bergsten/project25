@@ -5,5 +5,8 @@ ol
   - achievements.each do |achievement|
     li 
       a href="achievements/#{achievement['AchievementId']}" #{achievement["title"]}
+      a href="achievements/#{achievement['AchievementId']}/edit" Update
+
+
       form method="POST" action="achievements/#{achievement['AchievementId']}/delete"
         input type="submit" value="Delete"
