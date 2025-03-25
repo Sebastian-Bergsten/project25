@@ -2,4 +2,9 @@ h1 = result
 
 p This game is called #{result["title"]}.
 p This games id is #{result["GameId"]}.
-p = result2
+
+p Achievements that belongs to this game:
+ol
+  - result2.each do |hash|
+    li 
+        p #{hash["title"]}

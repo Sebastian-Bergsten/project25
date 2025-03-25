@@ -2,14 +2,48 @@ require 'sinatra'
 require 'slim'
 require 'sqlite3'
 require 'sinatra/reloader'
-#require 'becrypt'
-
-# 
+require 'bcrypt'
 
 enable :sessions
 
+#11:49 sista to do filmen
+
 get('/')  do
-    slim(:start)
+    slim(:register)
+end
+
+post('/users/new') do
+    username = params[:username]
+    password = params[:password]
+    password_confirm = params[:password_confirm]
+    email = params[:email]
+    db = SQLite3::Database.new("db/DB.db")
+
+    if password == password_confirm
+        password_digest = BCrypt::Password.create(password)
+        db.execute("INSERT INTO users (username, password_digest, email) VALUES (?,?,?)",[username, password_digest, email])
+        redirect('/')
+    else
+        "YOUR PASSWORDS DON'T MATCH"
+    end
+end
+
+get('/showlogin') do
+    slim(:login)
+end
+
+post('/login') do
+    username = params[:username]
+    password = params[:password]
+    db = SQLite3::Database.new("db/DB.db")
+    db.results_as_hash = true
+    result = db.execute("SELECT * FROM users WHERE username = ?", username).first
+
+    if BCrypt::Password.new(result["password_digest"]) == password
+        redirect('/games')
+    else
+        "WRONG PASSWORD"
+    end
 end
 
 get('/games') do
@@ -35,7 +69,7 @@ get('/games/:id') do
     db = SQLite3::Database.new("db/DB.db")
     db.results_as_hash = true
     result = db.execute("SELECT * FROM games WHERE GameId = ?",id).first
-    result2 = db.execute("SELECT title FROM achievements WHERE game_id=?",id).first
+    result2 = db.execute("SELECT title FROM achievements WHERE game_id=?",id)
     slim(:"games/show",locals:{result:result,result2:result2})
 end
 
