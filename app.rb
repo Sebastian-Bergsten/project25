@@ -6,7 +6,12 @@ require 'bcrypt'
 
 enable :sessions
 
-#11:49 sista to do filmen
+#Admin admin123
+#Sebastian sebbe123
+
+#nav för admina och användare
+
+#relations tabller mellana nvändarre och spel
 
 get('/')  do
     slim(:register)
@@ -40,10 +45,19 @@ post('/login') do
     result = db.execute("SELECT * FROM users WHERE username = ?", username).first
 
     if BCrypt::Password.new(result["password_digest"]) == password
-        redirect('/games')
+        session[:id] = result["UserId"]
+        redirect('/usergames')
     else
         "WRONG PASSWORD"
     end
+end
+
+get('/usergames') do
+    id = session[:id].to_i
+    db = SQLite3::Database.new("db/DB.db")
+    db.results_as_hash = true
+    result = db.execute("SELECT * FROM games WHERE user_id = ?", id)
+    slim(:"users/index", locals:{games:result})
 end
 
 get('/games') do
