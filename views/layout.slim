@@ -8,11 +8,25 @@ html lang="en"
     title Document
   body
 
-    nav
-      a href="/" Start
-      a href="/showlogin" Login
-      a href="/achievements" Show all achivements
-      a href="/achievements/new" Add new achievement
-      a href="/games" Show all games 
-      a href="/games/new"  Add new game
+    - if session[:id] == nil
+      nav   
+        a href="/" Register
+        a href="/showlogin" Login
+    - elsif session[:id] == 1
+      nav
+        a href="/achievements" Show all achivements
+        a href="/achievements/new" Add new achievement
+        a href="/games" Show all games 
+        a href="/games/new"  Add new game
+        a href="/showlogout" Log out
+    - else
+      nav 
+        a href="/usergames" Your games 
+        a href="/showlogout" Log out  
+
+
+
+
+
+  
     ==yield

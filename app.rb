@@ -9,9 +9,9 @@ enable :sessions
 #Admin admin123
 #Sebastian sebbe123
 
-#nav för admina och användare
-
 #relations tabller mellana nvändarre och spel
+
+#Fixa med Yardoc innan inlämning
 
 get('/')  do
     slim(:register)
@@ -52,12 +52,32 @@ post('/login') do
     end
 end
 
+get('/showlogout') do
+    slim(:logout)
+end
+
+post('/logout') do
+    session[:id] = nil
+    redirect('/')
+end
+
 get('/usergames') do
     id = session[:id].to_i
     db = SQLite3::Database.new("db/DB.db")
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM games WHERE user_id = ?", id)
-    slim(:"users/index", locals:{games:result})
+    user = db.execute("SELECT username FROM users WHERE UserId = ?", id).first
+    result = db.execute("SELECT * FROM user_game_rel INNER JOIN games ON user_game_rel.game_id = games.GameId WHERE user_id = ?", id)
+    slim(:"users/index", locals:{user:user, result:result})
+end
+
+get('/usergames/:id') do
+    id = params[:id]
+    user_id = session[:id].to_i
+    db = SQLite3::Database.new("db/DB.db")
+    db.results_as_hash = true
+    title = db.execute("SELECT title FROM games WHERE GameId = ?", id).first
+    result = db.execute("SELECT * FROM user_achievement_rel INNER JOIN achievements ON user_achievement_rel.achievement_id = achievements.AchievementId WHERE user_id = ?", user_id)
+    slim(:"users/show",locals:{title:title, result:result})
 end
 
 get('/games') do
@@ -84,7 +104,7 @@ get('/games/:id') do
     db.results_as_hash = true
     result = db.execute("SELECT * FROM games WHERE GameId = ?",id).first
     result2 = db.execute("SELECT title FROM achievements WHERE game_id=?",id)
-    slim(:"games/show",locals:{result:result,result2:result2})
+    slim(:"games/show",locals:{result:result, result2:result2})
 end
 
 get('/achievements') do

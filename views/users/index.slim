@@ -1,4 +1,8 @@
-h1 Hello user #{}
+h1 Hello #{user["username"]} here are your games!
 
-- games.each do |game|
-    p = game["title"]
+ol
+  - result.each do |game|
+    li 
+      a href="usergames/#{game['GameId']}" #{game["title"]}
+
+form action="usergame/new" method="post"
