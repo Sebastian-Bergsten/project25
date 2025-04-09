@@ -1,0 +1,16 @@
+h1 Hello #{user["username"]} here are your games!
+
+ol
+  - result.each do |game|
+    li 
+      a href="usergames/#{game['GameId']}" #{game["title"]}
+
+      form method="POST" action="usergames/#{game['id']}/delete"
+        input type="submit" value="Delete"
+
+form action="/usergames/new" method="post"
+  select name="game_id" id="game_id"
+    - no_game.each do |game|
+      option value="#{game["GameId"]}" #{game["title"]} 
+  br
+  input type="submit" value="Add Game"

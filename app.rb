@@ -9,12 +9,28 @@ enable :sessions
 #Admin admin123
 #Sebastian sebbe123
 
-#relations tabller mellana nvändarre och spel
+#Gör så att användaren kan välja att visa secret achievements
 
 #Fixa med Yardoc innan inlämning
 
+#Lista all spel när du create achievement
+
 get('/')  do
     slim(:register)
+end
+
+get('/users') do
+    db = SQLite3::Database.new("db/DB.db")
+    db.results_as_hash = true
+    users = db.execute("SELECT * FROM users")
+    slim(:"users/index", locals:{users:users})
+end
+
+post('/users/:id/delete') do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/DB.db")
+    db.execute("DELETE FROM users WHERE UserId=?",id)
+    redirect('/users')
 end
 
 post('/users/new') do
@@ -27,7 +43,7 @@ post('/users/new') do
     if password == password_confirm
         password_digest = BCrypt::Password.create(password)
         db.execute("INSERT INTO users (username, password_digest, email) VALUES (?,?,?)",[username, password_digest, email])
-        redirect('/')
+        redirect('/showlogin')
     else
         "YOUR PASSWORDS DON'T MATCH"
     end
@@ -44,9 +60,17 @@ post('/login') do
     db.results_as_hash = true
     result = db.execute("SELECT * FROM users WHERE username = ?", username).first
 
+    if result == nil
+        redirect('/showlogin')
+    end
+
     if BCrypt::Password.new(result["password_digest"]) == password
         session[:id] = result["UserId"]
-        redirect('/usergames')
+        if session[:id] == 1
+            redirect('/games')
+        else
+            redirect('/usergames')
+        end
     else
         "WRONG PASSWORD"
     end
@@ -59,25 +83,6 @@ end
 post('/logout') do
     session[:id] = nil
     redirect('/')
-end
-
-get('/usergames') do
-    id = session[:id].to_i
-    db = SQLite3::Database.new("db/DB.db")
-    db.results_as_hash = true
-    user = db.execute("SELECT username FROM users WHERE UserId = ?", id).first
-    result = db.execute("SELECT * FROM user_game_rel INNER JOIN games ON user_game_rel.game_id = games.GameId WHERE user_id = ?", id)
-    slim(:"users/index", locals:{user:user, result:result})
-end
-
-get('/usergames/:id') do
-    id = params[:id]
-    user_id = session[:id].to_i
-    db = SQLite3::Database.new("db/DB.db")
-    db.results_as_hash = true
-    title = db.execute("SELECT title FROM games WHERE GameId = ?", id).first
-    result = db.execute("SELECT * FROM user_achievement_rel INNER JOIN achievements ON user_achievement_rel.achievement_id = achievements.AchievementId WHERE user_id = ?", user_id)
-    slim(:"users/show",locals:{title:title, result:result})
 end
 
 get('/games') do
@@ -115,7 +120,10 @@ get('/achievements') do
 end
 
 get('/achievements/new') do
-    slim(:"achievements/new")
+    db = SQLite3::Database.new("db/DB.db")
+    db.results_as_hash = true
+    games = db.execute("SELECT * FROM games")
+    slim(:"achievements/new", locals:{games:games})
 end
 
 post('/achievements/new') do
@@ -164,4 +172,57 @@ get('/achievements/:id') do
     result = db.execute("SELECT * FROM achievements WHERE AchievementId = ?",id).first
     result2 = db.execute("SELECT title FROM games WHERE GameId IN (SELECT game_id FROM achievements WHERE AchievementId = ?)",id).first
     slim(:"achievements/show",locals:{result:result,result2:result2})
+end
+
+get('/usergames') do
+    id = session[:id].to_i
+    db = SQLite3::Database.new("db/DB.db")
+    db.results_as_hash = true
+    user = db.execute("SELECT username FROM users WHERE UserId = ?", id).first
+    result = db.execute("SELECT * FROM user_game_rel INNER JOIN games ON user_game_rel.game_id = games.GameId WHERE user_id = ?", id)
+    no_game = db.execute("SELECT * FROM games WHERE GameId NOT IN (SELECT game_id FROM user_game_rel WHERE user_id = ?)", id)
+    slim(:"usergames/index", locals:{user:user, result:result, no_game:no_game})
+end
+
+post('/usergames/new') do
+    user_id = session[:id]
+    game_id = params[:game_id]
+    db = SQLite3::Database.new("db/DB.db")
+    db.execute("INSERT INTO user_game_rel (user_id,game_id) VALUES (?,?)", [user_id, game_id])
+    redirect('/usergames')
+end
+
+post('/usergames/:id/delete') do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/DB.db")
+    db.execute("DELETE FROM user_game_rel WHERE id =?",id)
+    redirect('/usergames')
+end
+
+get('/usergames/:id') do
+    game_id = params[:id]
+    user_id = session[:id]
+    db = SQLite3::Database.new("db/DB.db")
+    db.results_as_hash = true
+    game = db.execute("SELECT * FROM games WHERE GameId = ?", game_id).first
+    result = db.execute("SELECT * FROM user_achievement_rel INNER JOIN achievements ON user_achievement_rel.achievement_id = achievements.AchievementId WHERE user_id = ? AND game_id = ?", [user_id, game_id])
+    no_achievement = db.execute("SELECT * FROM achievements WHERE AchievementId NOT IN (SELECT achievement_id FROM user_achievement_rel WHERE user_id = ? AND game_id = ?) AND game_id = ?", [user_id, game_id, game_id])
+    slim(:"usergames/show",locals:{game:game, result:result, no_achievement:no_achievement})
+end
+
+post('/usergames/:id/achievements/new') do
+    game_id = params[:id].to_i
+    user_id = session[:id]
+    completed = params[:complete]
+    db = SQLite3::Database.new("db/DB.db")
+
+    if completed.class == Array
+        completed.each do |achievement|
+            db.execute("INSERT INTO user_achievement_rel (user_id, achievement_id) VALUES (?,?)", [user_id, achievement.to_i])
+        end
+    else
+        db.execute("INSERT INTO user_achievement_rel (user_id, achievement_id) VALUES (?,?)", [user_id, completed.to_i])
+    end
+
+    redirect('/usergames')
 end

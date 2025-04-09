@@ -1,7 +1,9 @@
-h1 = result
+h1 #{result["title"]}
 
+p This achievements id is #{result["AchievementId"]}
 p This achievement is called #{result["title"]}.
-p This achievements id is #{result["AchievementId"]}.
+P To complete this achievement you have to #{result["details"]}
+p Link to a guide: #{result["link"]}
 p The game that this achievement is part of, is called #{result2["title"]}.
 
 -if result["hidden_attribute"] == 0

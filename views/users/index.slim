@@ -1,8 +1,9 @@
-h1 Hello #{user["username"]} here are your games!
+h1 Here are all the users that have an account on this website 
 
 ol
-  - result.each do |game|
+  - users.each do |user|
     li 
-      a href="usergames/#{game['GameId']}" #{game["title"]}
+        p Username: #{user["username"]}
 
-form action="usergame/new" method="post"
+        form method="POST" action="users/#{user['UserId']}/delete"
+            input type="submit" value="Delete"

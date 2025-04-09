@@ -5,3 +5,10 @@ form action="/achievements/new" method="post"
     input type="text" name="hidden_attribute" placeholder="Is this a hidden achievement?"/
     input type="text" name="game_id" placeholder="Id for the game"/
     input type="submit" value="Create achievement"/
+
+p = "secret achievement = 0"
+p = "visable achievement = 1"
+
+ul 
+    - games.each do |game|
+        li #{game["title"]} has game id: #{game["GameId"]}

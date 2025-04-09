@@ -1,0 +1,22 @@
+h1 Here are all the achievements for #{game["title"]}!
+
+br
+h2 These are the achievements you've already completed!
+
+ul
+  - result.each do |achievement|
+    li
+      p #{achievement["title"]}
+
+br
+h2 These are the achievements that you haven't done
+
+form action="/usergames/#{game["GameId"]}/achievements/new" method="post"
+  ul
+    - no_achievement.each do |achievement|
+      li
+        p #{achievement["title"]}
+        input type="checkbox" name="complete[]" value="#{achievement["AchievementId"]}"
+  input type="submit" value="Submit"
+
+/ - if achievement["hidden_attribute"] == 0 
